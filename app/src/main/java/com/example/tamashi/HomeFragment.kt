@@ -1,10 +1,22 @@
 package com.example.tamashi
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
+import com.example.tamashi.adapters.ProductAdapter
+import com.example.tamashi.models.ProductModel
+import org.json.JSONArray
+import org.json.JSONObject
+import java.lang.reflect.InvocationTargetException
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -34,7 +46,70 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false)
+        val view = inflater.inflate(R.layout.fragment_home, container, false)
+        val recycler = view.findViewById<RecyclerView>(R.id.home_recycler)
+        val loading = view.findViewById<ProgressBar>(R.id.home_pb)
+
+        callProductApi(recycler, loading)
+
+        return view
+    }
+
+    fun callProductApi(recycler: RecyclerView, loading: ProgressBar)
+    {
+        loading.visibility = View.VISIBLE
+
+        val queue = Volley.newRequestQueue(requireContext())
+        val url = PreferencesManager.URL + "/api/products?populate=*"
+
+        val stringRequest = StringRequest(Request.Method.GET, url,
+            {
+                response ->
+                val productList = callManuallyData(response)
+
+                val productAdapter = ProductAdapter()
+                recycler.adapter = productAdapter
+                loading.visibility = View.GONE
+                productAdapter.submitList(productList)
+            },{
+                error ->
+                error.printStackTrace();
+                loading.visibility = View.GONE
+                Toast.makeText(requireContext(), error.message, Toast.LENGTH_LONG).show()
+            })
+        queue.add(stringRequest)
+    }
+
+    private fun callManuallyData(response: String) : ArrayList<ProductModel> {
+        val productList = arrayListOf<ProductModel>()
+        try {
+            val responseObject = JSONObject(response)
+            val productArray = responseObject.getJSONArray("data")
+
+            for (index in 0 until productArray.length()){
+                val productObject = productArray.getJSONObject(index)
+                val products = productObject.getJSONObject("attributes")
+                val thumbnail = products.getJSONObject("thumbnail")
+                val thumbnailData = thumbnail.getJSONObject("data")
+                val thumbnailAttr = thumbnailData.getJSONObject("attributes")
+
+                val product = ProductModel(
+                    productObject.getInt("id"),
+                    products.getString("name"),
+                    products.getString("description"),
+                    products.getDouble("price"),
+                    thumbnailAttr.getString("url"),
+                    products.getString("status"),
+                    products.getString("po_date"),
+                    products.getInt("price")
+                )
+                productList.add(product)
+            }
+
+        } catch (e: InvocationTargetException){
+            Log.e("ERROR", "error ITE: " + e.message)
+        }
+        return productList
     }
 
     companion object {
