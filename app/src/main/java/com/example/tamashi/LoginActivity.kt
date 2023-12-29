@@ -30,6 +30,11 @@ class LoginActivity : AppCompatActivity() {
             Toast.makeText(this@LoginActivity, "Login", Toast.LENGTH_LONG)
             getAuthData(identifier, password)
         }
+
+        toRegister.setOnClickListener{
+            startActivity(Intent(this, RegisterActivity::class.java))
+            finish()
+        }
     }
 
     private fun getAuthData(identifier: EditText?, password: EditText?) {
@@ -45,13 +50,13 @@ class LoginActivity : AppCompatActivity() {
             Request.Method.POST, url, authObject,
             Response.Listener { response ->
                 try {
-                    val jwtRes = response.getString("jwt")
                     val userRes = response.getJSONObject("user")
                     PreferencesManager.JWT = response.getString("jwt")
                     PreferencesManager.ID_USER = userRes.getInt("id")
 
                     Log.d("Hasil", response.toString())
                     startActivity(Intent(this, MainActivity::class.java))
+                    finish()
                 } catch (e: JSONException){
                     Toast.makeText(this, e.message, Toast.LENGTH_LONG)
                 }
