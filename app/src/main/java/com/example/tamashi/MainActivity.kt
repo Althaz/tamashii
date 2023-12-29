@@ -1,5 +1,6 @@
 package com.example.tamashi
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -27,8 +28,13 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_account -> {
-                    loadFragment(AccountFragment())
-                    true
+                    if(PreferencesManager.JWT == ""){
+                        startActivity(Intent(this, LoginActivity::class.java))
+                        true
+                    } else {
+                        loadFragment(AccountFragment())
+                        true
+                    }
                 }
 
                 else -> {
