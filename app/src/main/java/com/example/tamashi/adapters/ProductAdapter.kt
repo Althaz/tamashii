@@ -1,15 +1,18 @@
 package com.example.tamashi.adapters
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.tamashi.DetailActivity
 import com.example.tamashi.PreferencesManager
 import com.example.tamashi.R
 import com.example.tamashi.models.ProductModel
@@ -34,6 +37,7 @@ class ProductAdapter :
         val productImage : ImageView = itemView.findViewById(R.id.product_card_img)
         val productTitle : TextView = itemView.findViewById(R.id.product_card_title)
         val productPrice : TextView = itemView.findViewById(R.id.product_card_price)
+        val productItem : CardView = itemView.findViewById(R.id.product_card_item)
         fun bindData(product: ProductModel){
             Glide.with(productImage)
                 .load(PreferencesManager.URL + product.thumbnail)
@@ -41,6 +45,12 @@ class ProductAdapter :
             Toast.makeText(itemView.context, product.thumbnail, Toast.LENGTH_LONG)
             productTitle.text = product.name
             productPrice.text = "Rp. " + product.price
+
+            productItem.setOnClickListener{
+                val intent = Intent(itemView.context, DetailActivity::class.java)
+                intent.putExtra("id_produk", product.id.toString())
+                itemView.context.startActivity(intent)
+            }
         }
     }
 

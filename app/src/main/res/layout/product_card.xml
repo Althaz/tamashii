@@ -5,7 +5,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="8dp"
     app:strokeWidth="2dp"
-    app:cardCornerRadius="12dp">
+    app:cardCornerRadius="12dp"
+    android:id="@+id/product_card_item">
 
     <LinearLayout
         android:layout_width="match_parent"
