@@ -5,6 +5,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
+import com.example.tamashi.adapters.CategoryAdapter
+import com.example.tamashi.models.CategoryModel
+import org.json.JSONObject
+import java.lang.reflect.InvocationTargetException
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -34,7 +43,53 @@ class CategoriesFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_categories, container, false)
+        val view = inflater.inflate(R.layout.fragment_categories, container, false)
+        val recycler = view.findViewById<RecyclerView>(R.id.categories_recycler)
+
+        callCategoriesApi(recycler)
+
+        return view
+    }
+
+    private fun callCategoriesApi(recycler: RecyclerView?) {
+        val queue = Volley.newRequestQueue(requireContext())
+        val url = PreferencesManager.URL + "/api/categories"
+
+        val stringRequest = StringRequest(Request.Method.GET, url,
+            {
+                response ->
+                val categoryList = callData(response)
+
+                val categoryAdapter = CategoryAdapter()
+                recycler?.adapter = categoryAdapter
+                categoryAdapter.submitList(categoryList)
+            },{
+                error ->
+                Toast.makeText(requireContext(), error.message, Toast.LENGTH_LONG)
+            })
+        queue.add(stringRequest)
+    }
+
+    private fun callData(response: String?): ArrayList<CategoryModel>? {
+        val categoryList = arrayListOf<CategoryModel>()
+        try {
+            val responseObj = JSONObject(response)
+            val categoriesArray = responseObj.getJSONArray("data")
+
+            for (index in 0 until categoriesArray.length()){
+                val categoryObj = categoriesArray.getJSONObject(index)
+                val category = categoryObj.getJSONObject("attributes")
+
+                val categoryModel = CategoryModel(
+                    categoryObj.getInt("id"),
+                    category.getString("name")
+                )
+                categoryList.add(categoryModel)
+            }
+        } catch (e: InvocationTargetException){
+            Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG)
+        }
+        return categoryList
     }
 
     companion object {
