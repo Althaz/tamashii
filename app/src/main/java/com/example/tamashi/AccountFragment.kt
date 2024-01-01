@@ -5,6 +5,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import android.widget.Toast
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -33,8 +40,39 @@ class AccountFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_account, container, false)
+        val view = inflater.inflate(R.layout.fragment_account, container, false)
+        val accName = view.findViewById<TextView>(R.id.account_name_tv)
+        val accEmail = view.findViewById<TextView>(R.id.account_email_tv)
+
+        getAccountData(accName, accEmail)
+
+        return view
+    }
+
+    private fun getAccountData(accName: TextView?, accEmail: TextView?) {
+        val jwt = PreferencesManager.JWT
+        val url = PreferencesManager.URL + "/api/users/" + PreferencesManager.ID_USER
+        val queue = Volley.newRequestQueue(requireContext())
+
+        val stringRequest: StringRequest = object : StringRequest(Request.Method.GET, url,
+            Response.Listener { response ->
+                val res = JSONObject(response)
+                accName?.text = res.getString("full_name")
+                accEmail?.text = res.getString("email")
+            },
+            Response.ErrorListener { error ->
+                Toast.makeText(requireContext(), error.message, Toast.LENGTH_LONG)
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["Authorization"] = "Bearer " + jwt
+                return headers
+            }
+        }
+
+        queue.add(stringRequest)
     }
 
     companion object {
