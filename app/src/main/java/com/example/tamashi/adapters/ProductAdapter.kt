@@ -1,10 +1,13 @@
 package com.example.tamashi.adapters
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.PorterDuff
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -20,6 +23,9 @@ import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
 import com.example.tamashi.DetailActivity
 import com.example.tamashi.PreferencesManager
+import com.example.tamashi.PreferencesManager.Companion.ID_USER
+import com.example.tamashi.PreferencesManager.Companion.JWT
+import com.example.tamashi.PreferencesManager.Companion.SHARED_PREFS
 import com.example.tamashi.R
 import com.example.tamashi.models.ProductModel
 import org.json.JSONObject
@@ -46,7 +52,10 @@ class ProductAdapter :
         val productPrice : TextView = itemView.findViewById(R.id.product_card_price)
         val productItem : CardView = itemView.findViewById(R.id.product_card_item)
         val addWishlistBtn : ImageView = itemView.findViewById(R.id.product_card_add_wishlist_btn)
+        val buyBtn : Button = itemView.findViewById(R.id.product_card_add_to_card_btn)
+        lateinit var sharedPrefs: SharedPreferences
         fun bindData(product: ProductModel){
+            sharedPrefs = itemView.context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
             Glide.with(productImage)
                 .load(PreferencesManager.URL + product.thumbnail)
                 .into(productImage)
@@ -61,17 +70,24 @@ class ProductAdapter :
             }
 
             addWishlistBtn.setOnClickListener{
-                if (PreferencesManager.JWT == ""){
+                var jwt = sharedPrefs.getString(JWT, "")
+                if (jwt == ""){
                     Toast.makeText(itemView.context, "Harap login terlebih dahulu!", Toast.LENGTH_LONG).show();
                 } else {
                     addWishlist(product.id, addWishlistBtn)
                 }
             }
+
+            buyBtn.setOnClickListener{
+                val intent = Intent(itemView.context, DetailActivity::class.java)
+                intent.putExtra("id_produk", product.id.toString())
+                itemView.context.startActivity(intent)
+            }
         }
 
         private fun addWishlist(id: Int, addWishlistBtn: ImageView) {
             val wishlistObj = JSONObject()
-            wishlistObj.put("users_permissions_user", PreferencesManager.ID_USER)
+            wishlistObj.put("users_permissions_user", sharedPrefs.getInt(ID_USER, 0))
             wishlistObj.put("products", id)
             val dataObj = JSONObject()
             dataObj.put("data", wishlistObj)
@@ -97,7 +113,7 @@ class ProductAdapter :
 
                 override fun getHeaders(): MutableMap<String, String> {
                     val headers = HashMap<String, String>()
-                    headers["Authorization"] = "Bearer " + PreferencesManager.JWT
+                    headers["Authorization"] = "Bearer " + sharedPrefs.getString(JWT, "")
                     return headers
                 }
             }

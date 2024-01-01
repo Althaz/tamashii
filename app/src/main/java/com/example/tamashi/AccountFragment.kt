@@ -1,6 +1,9 @@
 package com.example.tamashi
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +14,13 @@ import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.example.tamashi.PreferencesManager.Companion.ID_USER
+import com.example.tamashi.PreferencesManager.Companion.JWT
+import com.example.tamashi.PreferencesManager.Companion.SHARED_PREFS
+import org.json.JSONException
 import org.json.JSONObject
+import java.lang.reflect.InvocationTargetException
+import kotlin.math.log
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -27,7 +36,7 @@ class AccountFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-
+    lateinit var sharedPrefs: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -45,6 +54,7 @@ class AccountFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_account, container, false)
         val accName = view.findViewById<TextView>(R.id.account_name_tv)
         val accEmail = view.findViewById<TextView>(R.id.account_email_tv)
+        sharedPrefs = view.context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
 
         getAccountData(accName, accEmail)
 
@@ -52,22 +62,31 @@ class AccountFragment : Fragment() {
     }
 
     private fun getAccountData(accName: TextView?, accEmail: TextView?) {
-        val jwt = PreferencesManager.JWT
-        val url = PreferencesManager.URL + "/api/users/" + PreferencesManager.ID_USER
+        var jwt: String? = sharedPrefs.getString(JWT, "")
+        val url = PreferencesManager.URL + "/api/users/" + sharedPrefs.getInt(ID_USER, 0) + "?populate[wishlists][populate][0]=products"
+        Log.d("URL", url.toString())
         val queue = Volley.newRequestQueue(requireContext())
 
         val stringRequest: StringRequest = object : StringRequest(Request.Method.GET, url,
             Response.Listener { response ->
-                val res = JSONObject(response)
-                accName?.text = res.getString("full_name")
-                accEmail?.text = res.getString("email")
+                Log.e("RES", response)
+                try {
+                    val res = JSONObject(response)
+                    accName?.text = res.getString("full_name")
+                    accEmail?.text = res.getString("email")
+                } catch (e: InvocationTargetException){
+                    Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
+                    Log.e("ERROR ITE", e.message.toString())
+                } catch (e: JSONException){
+                    Log.e("ERROR JSON", e.message.toString())
+                }
             },
             Response.ErrorListener { error ->
-                Toast.makeText(requireContext(), error.message, Toast.LENGTH_LONG)
+                Toast.makeText(requireContext(), error.message, Toast.LENGTH_LONG).show()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["Authorization"] = "Bearer " + jwt
+                headers["Authorization"] = "Bearer " + jwt.toString()
                 return headers
             }
         }

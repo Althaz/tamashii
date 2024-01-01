@@ -1,6 +1,8 @@
 package com.example.tamashi
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +20,7 @@ import org.json.JSONObject
 import java.util.Objects
 
 class RegisterActivity : AppCompatActivity() {
+    lateinit var sharedPrefs: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
@@ -44,7 +47,7 @@ class RegisterActivity : AppCompatActivity() {
         val strUsername: String = username?.text.toString()
         val strEmail: String = email?.text.toString()
         val strPassword: String = password?.text.toString()
-
+        sharedPrefs = getSharedPreferences(PreferencesManager.SHARED_PREFS, Context.MODE_PRIVATE)
         val regObject = JSONObject()
         regObject.put("username", strUsername)
         regObject.put("email", strEmail)
@@ -58,8 +61,10 @@ class RegisterActivity : AppCompatActivity() {
             Response.Listener { response ->
                 try {
                     val userRes = response.getJSONObject("user")
-                    PreferencesManager.JWT = response.getString("jwt")
-                    PreferencesManager.ID_USER = userRes.getInt("id")
+                    val editSp = sharedPrefs.edit()
+                    editSp.putString(PreferencesManager.JWT, userRes.getString("jwt"))
+                    editSp.putInt(PreferencesManager.ID_USER, userRes.getInt("id"))
+                    editSp.apply()
 
                     Log.d("Hasil", response.toString())
                     startActivity(Intent(this, MainActivity::class.java))

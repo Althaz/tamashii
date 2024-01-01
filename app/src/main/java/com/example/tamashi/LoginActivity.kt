@@ -1,6 +1,8 @@
 package com.example.tamashi
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -13,10 +15,15 @@ import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.tamashi.PreferencesManager.Companion.ID_USER
+import com.example.tamashi.PreferencesManager.Companion.JWT
+import com.example.tamashi.PreferencesManager.Companion.SHARED_PREFS
 import org.json.JSONException
 import org.json.JSONObject
 
 class LoginActivity : AppCompatActivity() {
+
+    lateinit var sharedPrefs: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -25,7 +32,7 @@ class LoginActivity : AppCompatActivity() {
         val password = findViewById<EditText>(R.id.login_pass_et)
         val toRegister = findViewById<TextView>(R.id.login_to_reg_btn)
         val loginBtn = findViewById<Button>(R.id.login_login_btn)
-
+        sharedPrefs = getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
         loginBtn.setOnClickListener{
             Toast.makeText(this@LoginActivity, "Login", Toast.LENGTH_LONG)
             getAuthData(identifier, password)
@@ -51,18 +58,20 @@ class LoginActivity : AppCompatActivity() {
             Response.Listener { response ->
                 try {
                     val userRes = response.getJSONObject("user")
-                    PreferencesManager.JWT = response.getString("jwt")
-                    PreferencesManager.ID_USER = userRes.getInt("id")
+                    val editSp = sharedPrefs.edit()
+                    editSp.putString(JWT, response.getString("jwt"))
+                    editSp.putInt(ID_USER, userRes.getInt("id"))
+                    editSp.apply()
 
                     Log.d("Hasil", response.toString())
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 } catch (e: JSONException){
-                    Toast.makeText(this, e.message, Toast.LENGTH_LONG)
+                    Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
                 }
             },
             Response.ErrorListener { error ->
-                Toast.makeText(this, error.message, Toast.LENGTH_LONG)
+                Toast.makeText(this, error.message, Toast.LENGTH_LONG).show()
             }
             ) {
             override fun getBodyContentType(): String {

@@ -3,7 +3,8 @@ package com.example.tamashi
 class PreferencesManager {
     companion object{
         const val URL = "http://192.168.1.3:1337"
-        var JWT = ""
-        var ID_USER = 0;
+        const val SHARED_PREFS = "shared_prefs"
+        const val JWT = "jwt"
+        const val ID_USER = "id_user"
     }
 }
