@@ -1,6 +1,7 @@
 package com.example.tamashi
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -8,6 +9,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import com.android.volley.Request
@@ -55,6 +58,23 @@ class AccountFragment : Fragment() {
         val accName = view.findViewById<TextView>(R.id.account_name_tv)
         val accEmail = view.findViewById<TextView>(R.id.account_email_tv)
         sharedPrefs = view.context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
+//        Buttons Menu
+        val wishlistBtn = view.findViewById<LinearLayout>(R.id.account_wishlist_btn)
+        val ordersBtn = view.findViewById<LinearLayout>(R.id.account_orders_btn)
+        val addressBtn = view.findViewById<LinearLayout>(R.id.account_address_btn)
+        val settingBtn = view.findViewById<LinearLayout>(R.id.account_setting_btn)
+        val logoutBtn = view.findViewById<Button>(R.id.account_logout_btn)
+
+        logoutBtn.setOnClickListener{
+            val editSp = sharedPrefs.edit()
+            editSp.remove(JWT)
+            editSp.remove(ID_USER)
+            editSp.apply()
+        }
+
+        wishlistBtn.setOnClickListener{
+            startActivity(Intent(requireContext(), WishlistActivity::class.java))
+        }
 
         getAccountData(accName, accEmail)
 
