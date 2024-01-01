@@ -52,7 +52,7 @@ class WishlistAdapter: ListAdapter<WishlistModel, WishlistAdapter.ViewHolder>(Di
                 .load(PreferencesManager.URL + wishlist?.thumbnail)
                 .into(thumbnailImg)
             productName.text = wishlist?.name
-            productPrice.text = wishlist?.price.toString()
+            productPrice.text = "Rp. " + wishlist?.price.toString()
             itemView.setOnClickListener{
                 val intent = Intent(itemView.context, DetailActivity::class.java)
                 intent.putExtra("id_produk", wishlist?.id_produk.toString())

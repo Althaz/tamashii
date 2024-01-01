@@ -76,6 +76,10 @@ class AccountFragment : Fragment() {
             startActivity(Intent(requireContext(), WishlistActivity::class.java))
         }
 
+        ordersBtn.setOnClickListener{
+            startActivity(Intent(requireContext(), OrdersActivity::class.java))
+        }
+
         getAccountData(accName, accEmail)
 
         return view
