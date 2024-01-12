@@ -70,6 +70,7 @@ class AccountFragment : Fragment() {
             editSp.remove(JWT)
             editSp.remove(ID_USER)
             editSp.apply()
+            startActivity(Intent(requireContext(), LoginActivity::class.java));
         }
 
         wishlistBtn.setOnClickListener{
