@@ -40,6 +40,7 @@ class AccountFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
     lateinit var sharedPrefs: SharedPreferences
+    lateinit var addressText: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -81,6 +82,12 @@ class AccountFragment : Fragment() {
             startActivity(Intent(requireContext(), OrdersActivity::class.java))
         }
 
+        addressBtn.setOnClickListener{
+            val intent = Intent(requireContext(), AddressActivity::class.java)
+            intent.putExtra("address", addressText)
+            requireContext().startActivity(intent)
+        }
+
         getAccountData(accName, accEmail)
 
         return view
@@ -99,6 +106,7 @@ class AccountFragment : Fragment() {
                     val res = JSONObject(response)
                     accName?.text = res.getString("full_name")
                     accEmail?.text = res.getString("email")
+                    addressText = res.getString("address")
                 } catch (e: InvocationTargetException){
                     Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
                     Log.e("ERROR ITE", e.message.toString())
