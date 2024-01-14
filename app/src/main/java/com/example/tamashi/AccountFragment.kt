@@ -88,6 +88,12 @@ class AccountFragment : Fragment() {
             requireContext().startActivity(intent)
         }
 
+        settingBtn.setOnClickListener{
+            val  intent = Intent(requireContext(), SettingsActivity::class.java)
+            intent.putExtra("full_name", accName.text)
+            requireContext().startActivity(intent)
+        }
+
         getAccountData(accName, accEmail)
 
         return view
